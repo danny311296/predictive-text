@@ -11,9 +11,21 @@ class MarkovChain:
 		self.memory = {}
 		self.n = n
 		self.file = file
-		self.store = Trigram('database/'+file.split('/')[-1].strip('.txt')+'.db')
+		self.store = self.__choose_store()
 		self.ngrams = []
 	
+	def __choose_store(self):
+		db_name = 'database/'+self.file.split('/')[-1].strip('.txt')+'.db'
+		if(self.n == 2):
+			return Bigram(db_name)
+		elif(self.n == 3):
+			return Trigram(db_name)
+		elif(self.n == 4):
+			return Fourgram(db_name)
+		elif(self.n == 5):
+			return Fivegram(db_name)
+		else:
+			raise NotImplementedError("%d not implemented"%self.n)
 	
 	def process_file(self):
 		with open(self.file, 'r', encoding = "ISO-8859-1") as f:
@@ -22,7 +34,7 @@ class MarkovChain:
 		# print(self.ngrams)
 		self.to_store(self.ngrams)
 	
-	def _learn_key(self, *key, value):
+	def __learn_key(self, *key, value):
 		
 		if key not in self.memory:
 			self.memory[key] = []
@@ -36,15 +48,11 @@ class MarkovChain:
 		return (self.store.get_ngram_values(*words))
 	
 	def learn(self, tokens):
-		# tokens = text.split(" ")
-		
-		# ngrams = [(tokens[i], tokens[i + 1], tokens[i + 2]) for i in range(0, len(tokens) - 2)]
 		ngrams = [[tokens[i+j] for j in range(self.n)] for i in range(0, len(tokens) - (self.n-1))]
 		
 		for ngram in ngrams:
-			self._learn_key(*ngram[:self.n-1], value = ngram[-1])
+			self.__learn_key(*ngram[:self.n-1], value = ngram[-1])
 		return ngrams[0]
-		# pprint(ngrams)
 		
 	def next(self, *current_state):
 		next_possible = self.memory.get(current_state)
@@ -56,7 +64,7 @@ class MarkovChain:
 if __name__ == '__main__':
 	m = MarkovChain(sys.argv[1], int(sys.argv[2]))
 	# m.process_file()
-	pprint(m.query('a', 'baby'))
+	pprint(m.query('are', 'you'))
 	# pprint(m.memory)
 	# print(m.next(*sys.argv[3].split()))
 	

@@ -4,11 +4,11 @@ import sqlite3
 
 
 class BaseStore(object, metaclass=abc.ABCMeta):
-	def add_one(self, trigram):
-		self.add_many((trigram,))
+	def add_one(self, ngram):
+		self.add_many((ngram,))
 
 	@abc.abstractmethod
-	def add_many(self, trigrams):
+	def add_many(self, ngrams):
 		pass
 
 	@abc.abstractmethod
@@ -31,7 +31,7 @@ class SQLiteStore(BaseStore):
 			self.connection.execute('PRAGMA journal_mode=WAL')
 		self.connection.execute('PRAGMA synchronous=NORMAL')
 
-	def add_many(self, trigrams):
+	def add_many(self, ngrams):
 		raise NotImplementedError("Subclass must implement abstract method")
 		
 	def get_ngram_values(self, word_1, word_2):
@@ -115,4 +115,11 @@ class Trigram(SQLiteStore):
 				[min_probability_count, limit]
 			)
 
-	
+class Bigram(SQLiteStore):
+	pass
+
+class Fourgram(SQLiteStore):
+	pass
+
+class Fivegram(SQLiteStore):
+	pass
