@@ -7,21 +7,20 @@ from store import *
 
 class MarkovChain:
 
+	def __init__(self, file, n = 3):
+		self.memory = {}
+		self.n = n
+		self.file = file
+		self.store = Trigram('database/'+file.split('/')[-1].strip('.txt')+'.db')
+		self.ngrams = []
+	
+	
 	def process_file(self):
 		with open(self.file, 'r', encoding = "ISO-8859-1") as f:
 			for line in f:
 				self.ngrams.append(self.learn(line.split()[1:]))
 		# print(self.ngrams)
 		self.to_store(self.ngrams)
-	
-	def __init__(self, file, n = 3):
-		self.memory = {}
-		self.n = n
-		self.file = file
-		self.store = SQLiteStore('database/'+file.split('/')[-1].strip('.txt')+'.db')
-		self.ngrams = []
-		
-		# self.json_file = open(file.strip('.txt')+'.json', 'w')
 	
 	def _learn_key(self, *key, value):
 		
@@ -34,7 +33,7 @@ class MarkovChain:
 		self.store.add_many(ngrams)
 	
 	def query(self, *words):
-		return (self.store.get_trigram_values(*words))
+		return (self.store.get_ngram_values(*words))
 	
 	def learn(self, tokens):
 		# tokens = text.split(" ")
