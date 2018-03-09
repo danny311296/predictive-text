@@ -7,23 +7,24 @@ from store import *
 
 class MarkovChain:
 
-	def __preprocess(self):
-		with open(self.file, 'r') as f:
+	def process_file(self):
+		with open(self.file, 'r', encoding = "ISO-8859-1") as f:
 			for line in f:
 				self.ngrams.append(self.learn(line.split()[1:]))
-		print(self.ngrams)
+		# print(self.ngrams)
 		self.to_store(self.ngrams)
 	
 	def __init__(self, file, n = 3):
 		self.memory = {}
 		self.n = n
 		self.file = file
-		self.store = SQLiteStore(file.strip('.txt')+'.db')
+		self.store = SQLiteStore('database/'+file.split('/')[-1].strip('.txt')+'.db')
 		self.ngrams = []
-		self.__preprocess()
+		
 		# self.json_file = open(file.strip('.txt')+'.json', 'w')
 	
 	def _learn_key(self, *key, value):
+		
 		if key not in self.memory:
 			self.memory[key] = []
 
@@ -31,6 +32,9 @@ class MarkovChain:
 	
 	def to_store(self, ngrams):
 		self.store.add_many(ngrams)
+	
+	def query(self, *words):
+		return (self.store.get_trigram_values(*words))
 	
 	def learn(self, tokens):
 		# tokens = text.split(" ")
@@ -45,7 +49,6 @@ class MarkovChain:
 		
 	def next(self, *current_state):
 		next_possible = self.memory.get(current_state)
-
 		if not next_possible:
 			next_possible = self.memory.keys()
 
@@ -53,7 +56,9 @@ class MarkovChain:
 
 if __name__ == '__main__':
 	m = MarkovChain(sys.argv[1], int(sys.argv[2]))
-	pprint(m.memory)
-	print(m.next(*sys.argv[3].split()))
+	# m.process_file()
+	pprint(m.query('a', 'baby'))
+	# pprint(m.memory)
+	# print(m.next(*sys.argv[3].split()))
 	
 	
