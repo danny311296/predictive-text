@@ -120,7 +120,58 @@ class Bigram(SQLiteStore):
 	pass
 
 class Fourgram(SQLiteStore):
-	pass
+	def __init__(self, path=':memory:', wal=False):
+		super().__init__(path, wal)
+		self.connection.execute(
+			'''CREATE TABLE IF NOT EXISTS
+			markov_model
+			(
+			word_1 TEXT NOT NULL,
+			word_2 TEXT NOT NULL,
+			word_3 TEXT NOT NULL,
+			word_4 TEXT NOT NULL,
+			count INTEGER NOT NULL DEFAULT 0,
+			PRIMARY KEY (word_1, word_2, word_3, word_4)
+			)
+			''')
+
+	def add_many(self, fourgrams):
+		fourgrams = [(fourgram[0] or '', fourgram[1] or '', fourgram[2] or '', fourgram[3] or '')
+					for fourgram in fourgrams]
+
+		with self.connection:
+			self.connection.executemany(
+				'''INSERT OR IGNORE INTO markov_model
+				(word_1, word_2, word_3, word_4) VALUES (?, ?, ?, ?)
+				''',
+				fourgrams
+			)
+			self.connection.executemany(
+				'''UPDATE markov_model
+				SET count = count + 1
+				WHERE word_1 = ? AND word_2 = ? AND word_3 = ? AND word_4 = ?
+				''',
+				fourgrams
+			)
+
+	def get_ngram_values(self, word_1, word_2, word_3):
+		query = self.connection.execute(
+			'''SELECT word_4, count FROM markov_model
+			WHERE word_1 = ? AND word_2 = ? AND word_3 = ?
+			ORDER BY count DESC LIMIT 1000
+			''',
+			(word_1 or '', word_2 or '', word_3 or '')
+		)
+
+		value_dict = collections.OrderedDict()
+
+		for row in query:
+			value_dict[row[0] or None] = row[1]
+
+		if not value_dict:
+			raise KeyError()
+
+		return value_dict
 
 class Fivegram(SQLiteStore):
 	pass
