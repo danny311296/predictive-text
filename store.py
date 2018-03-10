@@ -42,7 +42,26 @@ class SQLiteStore(BaseStore):
 		
 	def trim(self, target_count, min_probability_count=2):
 		raise NotImplementedError("Subclass must implement abstract method")
-		
+	
+	def count(self):
+		query = self.connection.execute(
+			'''SELECT COUNT(1) FROM markov_model LIMIT 1'''
+		)
+
+		for row in query:
+			return row[0]
+
+	def trim(self, target_count, min_probability_count=2):
+		num_rows = self.count()
+		limit = max(0, num_rows - target_count)
+
+		with self.connection:
+			self.connection.execute(
+				'''DELETE FROM markov_model WHERE count < ? LIMIT ?''',
+				[min_probability_count, limit]
+			)
+
+	
 class Trigram(SQLiteStore):
 	
 	def __init__(self, path=':memory:', wal=False):
@@ -96,24 +115,6 @@ class Trigram(SQLiteStore):
 			raise KeyError()
 
 		return value_dict
-
-	def count(self):
-		query = self.connection.execute(
-			'''SELECT COUNT(1) FROM markov_model LIMIT 1'''
-		)
-
-		for row in query:
-			return row[0]
-
-	def trim(self, target_count, min_probability_count=2):
-		num_rows = self.count()
-		limit = max(0, num_rows - target_count)
-
-		with self.connection:
-			self.connection.execute(
-				'''DELETE FROM markov_model WHERE count < ? LIMIT ?''',
-				[min_probability_count, limit]
-			)
 
 class Bigram(SQLiteStore):
 	pass
