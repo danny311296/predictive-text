@@ -50,8 +50,8 @@ class MarkovChain:
 	def learn(self, tokens):
 		ngrams = [[tokens[i+j] for j in range(self.n)] for i in range(0, len(tokens) - (self.n-1))]
 		
-		for ngram in ngrams:
-			self.__learn_key(*ngram[:self.n-1], value = ngram[-1])
+		# for ngram in ngrams:
+			# self.__learn_key(*ngram[:self.n-1], value = ngram[-1])
 		return ngrams[0]
 		
 	def next(self, *current_state):
@@ -63,8 +63,8 @@ class MarkovChain:
 
 if __name__ == '__main__':
 	m = MarkovChain(sys.argv[1], int(sys.argv[2]))
-	# m.process_file()
-	pprint(m.query('let', 'me', 'know'))
+	m.process_file()
+	pprint(m.query('a', 'background', 'check', 'on'))
 	# pprint(m.memory)
 	# print(m.next(*sys.argv[3].split()))
 	
