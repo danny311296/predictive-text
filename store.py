@@ -61,7 +61,59 @@ class SQLiteStore(BaseStore):
 				[min_probability_count, limit]
 			)
 
-	
+
+class Bigram(SQLiteStore):
+	def __init__(self, path=':memory:', wal=False):
+		super().__init__(path, wal)
+		self.connection.execute(
+			'''CREATE TABLE IF NOT EXISTS
+			markov_model
+			(
+			word_1 TEXT NOT NULL,
+			word_2 TEXT NOT NULL,
+			count INTEGER NOT NULL DEFAULT 0,
+			PRIMARY KEY (word_1, word_2)
+			)
+			''')
+
+	def add_many(self, bigrams):
+		bigrams = [(bigram[0] or '', bigram[1] or '')
+					for bigram in bigrams]
+
+		with self.connection:
+			self.connection.executemany(
+				'''INSERT OR IGNORE INTO markov_model
+				(word_1, word_2) VALUES (?, ?)
+				''',
+				bigrams
+			)
+			self.connection.executemany(
+				'''UPDATE markov_model
+				SET count = count + 1
+				WHERE word_1 = ? AND word_2 = ?
+				''',
+				bigrams
+			)
+
+	def get_ngram_values(self, word_1):
+		query = self.connection.execute(
+			'''SELECT word_2, count FROM markov_model
+			WHERE word_1 = ?
+			ORDER BY count DESC LIMIT 1000
+			''',
+			(word_1 or '')
+		)
+
+		value_dict = collections.OrderedDict()
+
+		for row in query:
+			value_dict[row[0] or None] = row[1]
+
+		if not value_dict:
+			raise KeyError()
+
+		return value_dict
+			
 class Trigram(SQLiteStore):
 	
 	def __init__(self, path=':memory:', wal=False):
@@ -115,9 +167,6 @@ class Trigram(SQLiteStore):
 			raise KeyError()
 
 		return value_dict
-
-class Bigram(SQLiteStore):
-	pass
 
 class Fourgram(SQLiteStore):
 	def __init__(self, path=':memory:', wal=False):

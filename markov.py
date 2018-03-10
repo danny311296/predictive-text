@@ -64,7 +64,7 @@ class MarkovChain:
 if __name__ == '__main__':
 	m = MarkovChain(sys.argv[1], int(sys.argv[2]))
 	m.process_file()
-	pprint(m.query('a', 'background', 'check', 'on'))
+	pprint(m.query('a'))
 	# pprint(m.memory)
 	# print(m.next(*sys.argv[3].split()))
 	
