@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Text Predictor Machine Learning </title>
+    <link rel="stylesheet" type="text/css" href="../static/style.css">
+</head>
+<body>
+    <h1 class="title_bar"> Predictive Text UI</h1>
+    <div class="label"> Enter your text: </div>
+	
+	<form action="{{ url_for('handle_data') }}" method="post">
+    	<input type="text" name ="user_text" class="box" placeholder="Enter your text here..."/> 
+    	<input type="submit" value="Check" class="button">
+	</form>
+    <div>
+        <h2> 2 gram </h2>
+        <div class="output_box"> </div>
+    </div>
+    <div>
+        <h2> 3 gram </h2>
+        <div class="output_box"> </div>
+    </div>
+    <div>
+        <h2> 4 gram </h2>
+        <div class="output_box"> </div>
+    </div>
+    <div>
+        <h2> 5 gram </h2>
+        <div class="output_box"> </div>
+    </div>
+</body>
+</html>
